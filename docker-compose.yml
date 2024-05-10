@@ -1,0 +1,41 @@
+version: '3.1'
+
+services:
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  # パスワード
+      MYSQL_DATABASE: ${MYSQL_DATABASE}  # データベース名
+    ports:
+      - "13306:3306"
+    volumes:
+      - my-db:/var/lib/mysql 
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    restart: always
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+  app:
+    build: .
+    working_dir: /app
+    command: python app.py
+    environment:
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+
+volumes:
+  my-db:
